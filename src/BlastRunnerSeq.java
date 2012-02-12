@@ -5,7 +5,7 @@
  **/
 
 import edu.rit.compbio.seq.ProteinDatabase; // Reads in FASTA style databases.
-
+import edu.rit.compbio.seq.ProteinSequence;
 import java.io.File;
 
 public class BlastRunnerSeq {
@@ -16,13 +16,13 @@ public class BlastRunnerSeq {
 
         String inputDatabase = args[0];
         float percentage = Float.floatValue(args[1]);
-        String query = args[2];
+        ProteinSequence query = new ProteinSequence("Search Query", args[2]);
         
         ProteinDatabase pd = ProteinDatabase( new File( inputDatabase ) , new File("tmpIndexFile.dat") );
         BLASTP aligner = new BLASTP();
 
         for(long i=0; i < pd.getDatabaseLength()*percentage; i++){
-            AlignRange[] tmp = aligner.align( query, pd.getProteinSequence( i ).toString() );
+            AlignRange[] tmp = aligner.align( query, pd.getProteinSequence( i ) );
            // print the alignment nicely.  
         }
     }
