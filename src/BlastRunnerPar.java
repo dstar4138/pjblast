@@ -5,6 +5,7 @@
  * handle long sub word searches within the database entry itself.
  **/
 
+import edu.rit.compbio.seq.Alignment;
 import edu.rit.compbio.seq.ProteinDatabase; // Reads in FASTA style databases.
 import edu.rit.compbio.seq.ProteinSequence;
 import edu.rit.compbio.seq.Sequence;
@@ -13,14 +14,9 @@ import edu.rit.pj.Comm;
 import edu.rit.pj.WorkerTeam;
 import edu.rit.pj.WorkerRegion;
 import edu.rit.pj.WorkerLongForLoop;
-
-import edu.rit.pj.reduction.ObjectOp;
-import edu.rit.pj.reduction.SharedObject;
-import edu.rit.pj.reduction.SharedObjectArray;
 import edu.rit.mp.buf.ObjectItemBuf;
 
 import java.io.File;
-import java.util.ArrayList;
 
 public class BlastRunnerPar {
 
@@ -44,35 +40,26 @@ public class BlastRunnerPar {
             aligner = new BLASTN();
         }
          
-        // Loop over database and find alignments. Save each process's results to a local copy of:
-        final ArrayList<AlignRange> alignments = new ArrayList<AlignRange>();
-
+        // Loop over database and find alignments.
         new WorkerTeam().execute( new WorkerRegion(){
             public void run() throws Exception {
                 execute( 0L,  (long) (pd.getDatabaseLength()*percentage), new WorkerLongForLoop(){
                     public void run( long first, long last ){
                         for( long i=first; i<=last; ++i){
-                            alignments.add( aligner.align( query, pd.getProteinSequence( i ) ) );
+                        	try{
+	                            Alignment[] tmp = aligner.align( query, pd.getProteinSequence( i ) );
+	                            if(rank != 0){
+	                            	world.send(0, new ObjectItemBuf<Alignment[]>(tmp));
+	                            }else{
+	                            	//TODO: print alignments
+	                            }
+                        	}catch( Exception e ){}
                         }
                     }
                });
              }
         });
         
-        ObjectItemBuf< ArrayList<AlignRange> > buf = new ObjectItemBuf< ArrayList<AlignRange> >();
-        buf.item = alignments;
-        
-        world.reduce(0, buf, (new ObjectOp< ArrayList<AlignRange> >(){
-            public ArrayList<AlignRange> op( ArrayList<AlignRange> X, ArrayList<AlignRange> Y ){
-                ArrayList<AlignRange> Z = (ArrayList<AlignRange>) X.clone();
-                Z.addAll( Y );
-                return Z;
-            }})
-        );
-
-        if(rank==0){
-            //TODO: print the alignment nicely.  
-        }
     }
 
     private static void usage(){

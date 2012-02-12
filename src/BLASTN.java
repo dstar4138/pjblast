@@ -1,3 +1,6 @@
+import edu.rit.compbio.seq.Alignment;
+import edu.rit.compbio.seq.Sequence;
+
 public class BLASTN extends BLAST
 {
     private int match;
@@ -28,18 +31,25 @@ public class BLASTN extends BLAST
     
     //Nucleotide words are just every possible word
     //output analogous to protein version
-    protected int[] findSeeds(String query)
+    protected int[] findSeeds(byte[] query)
     {
-        int[] seeds = new int[query.length() - wordLength];
-        for(int i = 0; i < seeds.length; i++)
+        int[] seeds = new int[query.length - wordLength];
+        for(int i = 1; i < seeds.length; i++)
             seeds[i] = i;
         
         return seeds;
     }
     
-    
-    protected int getScore(char a, char b)
+    protected int getScore(byte a, byte b)
     {
-        return (a == b) ? this.match : this.mismatch;
+        if(a == b)
+            return match;
+        return mismatch;
     }
+
+	protected Alignment[] doGapped(AlignRange[] range, Sequence query,
+			Sequence subject) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

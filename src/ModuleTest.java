@@ -1,14 +1,22 @@
+import edu.rit.compbio.seq.ProteinSequence;
+import edu.rit.compbio.seq.Alignment;
+import edu.rit.compbio.seq.AlignmentPrinter;
+import edu.rit.compbio.seq.DefaultAlignmentStats;
+
 public class ModuleTest extends BLASTP
 {
     public static void main(String[] args)
     {
         BLASTP aligner = new BLASTP();
+        ProteinSequence q, s;
         
         switch(Integer.parseInt(args[0]))
         {
             case 1:
-                int[] seeds = aligner.findSeeds(args[1]);
-                System.out.println("Seed indexes for seq1");
+            	q = new ProteinSequence(">Query", args[1]);
+                int[] seeds = aligner.findSeeds(q.sequence());
+                
+                System.out.println("Seed indexes for " + q.description());
                 
                 for(int i = 0; i < seeds.length; i++)
                 {
@@ -16,24 +24,25 @@ public class ModuleTest extends BLASTP
                 }
                 System.out.println();
                 break;
-            case 2:
-                AlignRange[] results = aligner.align(args[1],args[2]);
                 
+            case 2:
+            	q = new ProteinSequence(">Query",args[1]);
+            	s = new ProteinSequence(">Subject",args[2]);
+                Alignment[] results = aligner.align(q,s);
+                AlignmentPrinter out = new AlignmentPrinter(System.out,new DefaultAlignmentStats(s.length()));
                 for(int i = 0; i < results.length; i++)
                 {
-                    System.out.println("Hit " + i);
-                    System.out.println(args[1].substring(results[i].qStart,results[i].qEnd));
-                    System.out.println(args[2].substring(results[i].sStart,results[i].sEnd));
+                    out.printDetails(results[i], q, s);
                 }
                 break;
             case 3:
-                int score = 0;
+              /*  int score = 0;
                 for(int i = 0; i < args[1].length(); i++)
                 {
                     System.out.print(aligner.getScore(args[1].charAt(i),args[2].charAt(i)) + " ");
                     score += aligner.getScore(args[1].charAt(i),args[2].charAt(i));
                 }
-                System.out.println("Total " + score);
+                System.out.println("Total " + score);*/
         }
         
     }

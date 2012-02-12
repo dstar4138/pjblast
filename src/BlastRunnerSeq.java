@@ -4,6 +4,7 @@
  * take exponential time. 
  **/
 
+import edu.rit.compbio.seq.Alignment;
 import edu.rit.compbio.seq.ProteinDatabase; // Reads in FASTA style databases.
 import edu.rit.compbio.seq.ProteinSequence;
 import edu.rit.compbio.seq.Sequence;
@@ -13,7 +14,7 @@ import java.io.File;
 
 public class BlastRunnerSeq {
 
-    public static void main( String[] args ){
+    public static void main( String[] args ) throws Exception {
         Comm.init(args);
          
         if( args.length != 4 ){ usage(); }
@@ -32,7 +33,7 @@ public class BlastRunnerSeq {
         }
         
         for(long i=0; i < pd.getDatabaseLength()*percentage; i++){
-            AlignRange[] tmp = aligner.align( query, pd.getProteinSequence( i ) );
+        	Alignment[] tmp = aligner.align( query, pd.getProteinSequence( i ) );
             if(tmp.length>0){
                 //TODO: print the alignment nicely, for this subject sequence vs the query.
             }
