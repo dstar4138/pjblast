@@ -2,7 +2,7 @@
 
 public class HSP
 {
-    public HSP(int q, int s, int score)
+    public HSP(int q, int s)
     {
         qPos = q;
         sPos = s;

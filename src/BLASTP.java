@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class BLASTP extends BLAST
 {
     private final int[][] BLOSUM62 = 
@@ -24,55 +26,79 @@ public class BLASTP extends BLAST
     
     private int[][] scoringMatrix;
     
+    private int wordCutoff;
+    
     public BLASTP()
     {
         //these are based on NCBI's defaults
         this.wordLength = 3;
-        this.scoreCutoff = 25;
+        this.wordCutoff = 13;
+        this.scoreCutoff = 23;
         this.gapOpenPenalty = 11;
-        this.gapExtendPenalty = 1;
+        this.gapExtensionPenalty = 1;
         this.scoringMatrix = BLOSUM62;
+        this.eCutoff = 10;
+        this.K = 0.13;
+        this.LAM = 0.318;
     }
     
     //TODO: add invalid scoring matrix error handling
-    public BLASTP(int wordLength, int scoreCutoff,int gapOpen, int gapExtend, int[][] userScoringMatrix)
+    public BLASTP(int wordLength, int wordCutoff, int scoreCutoff,int gapOpen, int gapExtend, double eCut, int[][] userScoringMatrix)
     {
         this.wordLength = wordLength;
         this.scoreCutoff = scoreCutoff;
         this.gapOpenPenalty = gapOpen;
-        this.gapExtendPenalty = gapExtend;
+        this.gapExtensionPenalty = gapExtend;
         this.scoringMatrix = userScoringMatrix;
+        this.wordCutoff = wordCutoff;
+        this.eCutoff = eCut;
     }
     
-    private int getScore(char a, char b)
+    protected int getScore(char a, char b)
     {
-        return scoringMatrix[aaToN(res1)][aaToN(res2)];
+        return scoringMatrix[aaToN(a)][aaToN(b)];
     }
     
     //self-scans the query for high-scoring words
     //NOTE: this is currently not a very efficient way of doing this and is O(n^2*wordLength)
-    private int[] findSeeds(String query)
+    protected int[] findSeeds(String query)
     {
-        ArrayList foundSeeds = new ArrayList();
-        int currScore = 0;
+        ArrayList<Integer> foundSeeds = new ArrayList<Integer>();
+        int currScore;
         
         //this loop walks through the query, breaking it into words
-        for(int i = 0; i < query.length() - wordLength; i++)
+        for(int i = 0; i <= query.length() - wordLength; i++)
         {
+            currScore = 0;
+           // System.out.println("Word " + i + " " + query.substring(i,i+wordLength));
             //this loops steps through the full length of the query
-            for(int j = 0; j < query.length() - wordLength, j++)
+            for(int j = 0; j <= query.length() - wordLength; j++)
             {
+                currScore = 0;
+               // System.out.println("Pair " + i + " " + query.substring(j,j+wordLength));
                 //score the current word across the entire query
                 for(int k = 0; k < wordLength; k++)
                 {
-                    currScore = getScore(query.charAt(i+k),subject.charAt(j+k));
+                 //   System.out.print(getScore(query.charAt(i+k),query.charAt(j+k)) + " \n");
+                    currScore += getScore(query.charAt(i+k),query.charAt(j+k));
+                   // System.out.println("sum " + currScore);
                 }
+                
+                //if the word obtains a sufficient score against any portion of the query, keep it and stop
                 //i: the high-scoring word as indicated by index
-                if(currScore >= scoreCutoff)
+                if(currScore >= wordCutoff)
+                {
                     foundSeeds.add(new Integer(i));
+                 //   System.out.println("Added " +query.substring(i,i+wordLength));
+                    break;
+                }
             }
         }
-        return foundSeeds.toArray();
+		int[] retval = new int[foundSeeds.size()];
+		
+		for(int i = 0; i < retval.length; i++)
+			retval[i] = foundSeeds.get(i).intValue();
+		return retval;
     }    
     
     //TODO: invalid character error handling
