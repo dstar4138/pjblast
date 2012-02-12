@@ -6,34 +6,81 @@
  **/
 
 import edu.rit.compbio.seq.ProteinDatabase; // Reads in FASTA style databases.
+import edu.rit.compbio.seq.ProteinSequence;
+import edu.rit.compbio.seq.Sequence;
+
+import edu.rit.pj.Comm;
+import edu.rit.pj.WorkerTeam;
+import edu.rit.pj.WorkerRegion;
+import edu.rit.pj.WorkerLongForLoop;
+
+import edu.rit.pj.reduction.ObjectOp;
+import edu.rit.pj.reduction.SharedObject;
+import edu.rit.pj.reduction.SharedObjectArray;
+import edu.rit.mp.buf.ObjectItemBuf;
 
 import java.io.File;
+import java.util.ArrayList;
 
-public class BlastRunnerSeq {
+public class BlastRunnerPar {
 
-    public static void main( String[] args ){
+    public static void main( String[] args ) throws Exception{
+        Comm.init(args);
+        final Comm world = Comm.world();
+        final int rank = world.rank();
+         
+        if( args.length != 4 ){ usage(); }
         
-        if( args.length != 3 ){ usage(); }
-
-        String inputDatabase = args[0];
-        float percentage = Float.floatValue(args[1]);
-        String query = args[2];
+        final ProteinDatabase pd = new ProteinDatabase( new File( args[1] ) , new File("tmpIndexFile.dat") );
+        final float percentage = (new Float(args[2])).floatValue();
         
-        ProteinDatabase pd = ProteinDatabase( new File( inputDatabase ) , new File("tmpIndexFile.dat") );
-        BLASTP aligner = new BLASTP();
+        final Sequence query;
+        final BLAST aligner;
+        if(args[0].toLowerCase().startsWith("p")){
+            query = new ProteinSequence(">Search Query", args[3]);
+            aligner = new BLASTP();
+        }else{
+            query = new NucleotideSequence(">Search Query", args[3]);
+            aligner = new BLASTN();
+        }
+         
+        // Loop over database and find alignments. Save each process's results to a local copy of:
+        final ArrayList<AlignRange> alignments = new ArrayList<AlignRange>();
 
-        for(long i=0; i < pd.getDatabaseLength()*percentage; i++){
-            AlignRange[] tmp = aligner.align( query, pd.getProteinSequence( i ).toString() );
-           // print the alignment nicely.  
+        new WorkerTeam().execute( new WorkerRegion(){
+            public void run() throws Exception {
+                execute( 0L,  (long) (pd.getDatabaseLength()*percentage), new WorkerLongForLoop(){
+                    public void run( long first, long last ){
+                        for( long i=first; i<=last; ++i){
+                            alignments.add( aligner.align( query, pd.getProteinSequence( i ) ) );
+                        }
+                    }
+               });
+             }
+        });
+        
+        ObjectItemBuf< ArrayList<AlignRange> > buf = new ObjectItemBuf< ArrayList<AlignRange> >();
+        buf.item = alignments;
+        
+        world.reduce(0, buf, (new ObjectOp< ArrayList<AlignRange> >(){
+            public ArrayList<AlignRange> op( ArrayList<AlignRange> X, ArrayList<AlignRange> Y ){
+                ArrayList<AlignRange> Z = (ArrayList<AlignRange>) X.clone();
+                Z.addAll( Y );
+                return Z;
+            }})
+        );
+
+        if(rank==0){
+            //TODO: print the alignment nicely.  
         }
     }
 
     private static void usage(){
-        System.out.println( "Usage: java BlastRunnerSeq <input database> <search coverage percentage> <query seqence>\n"+
+        System.out.println( "Usage: java BlastRunnerSeq [p/n] <input database> <search coverage percentage> <query seqence>\n"+
+                            "\t[p/n] - p if proteins, n if nucleotides.\n"+
                             "\t<input database> - Path to a file with FASTA syle sequences.\n" +
                             "\t<search coverage percentage> - A number 1-100, represents how much of the database to search\n"+
                             "\t<query seqence> - The seqence to search for in the input db.");
         System.exit(1);
     }
-
 }

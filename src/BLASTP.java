@@ -149,3 +149,4 @@ public class BLASTP extends BLAST
         return -1;
     }
 }
+
