@@ -37,10 +37,9 @@ public class BLASTN extends BLAST
         return seeds;
     }
     
+    
     protected int getScore(char a, char b)
     {
-        if(a == b)
-            return match;
-        return mismatch;
+        return (a == b) ? this.match : this.mismatch;
     }
 }
