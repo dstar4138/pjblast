@@ -1,0 +1,4 @@
+#!/bin/bash
+
+java BlastRunnerSeq p yeast.aa yeast.aa.indexs 1.0 GIDVKEEQIFTSGY
+
