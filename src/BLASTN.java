@@ -1,6 +1,3 @@
-import edu.rit.compbio.seq.Alignment;
-import edu.rit.compbio.seq.Sequence;
-
 public class BLASTN extends BLAST
 {
     private int match;
@@ -16,8 +13,8 @@ public class BLASTN extends BLAST
         this.gapOpenPenalty = 5;
         this.gapExtensionPenalty = 2;
         this.eCutoff = 10;
-        this.K = 0.13;
-        this.LAM = 0.318;
+        this.K = 0.035;
+        this.LAM = 0.252;
     }
     
     public BLASTN(int wordLength, int scoreCutoff,int gapOpen, int gapExtend, double eCut)
@@ -47,9 +44,9 @@ public class BLASTN extends BLAST
         return mismatch;
     }
 
-	protected Alignment[] doGapped(AlignRange[] range, Sequence query,
+/*	protected Alignment[] doGapped(AlignRange[] range, Sequence query,
 			Sequence subject) {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}*/
 }

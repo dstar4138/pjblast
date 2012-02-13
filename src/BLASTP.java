@@ -1,9 +1,7 @@
 import java.util.ArrayList;
-import edu.rit.compbio.seq.Alignment;
-import edu.rit.compbio.seq.Blosum62;
-import edu.rit.compbio.seq.ProteinLocalAlignmentSeq;
-import edu.rit.compbio.seq.ProteinSequence;
-import edu.rit.compbio.seq.Sequence;
+
+import modpj.Blosum62;
+
 
 public class BLASTP extends BLAST
 {    
@@ -21,8 +19,8 @@ public class BLASTP extends BLAST
         this.gapExtensionPenalty = 1;
         this.scoringMatrix = Blosum62.matrix;
         this.eCutoff = 10;
-        this.K = 0.13;
-        this.LAM = 0.318;
+        this.K = 0.035;
+        this.LAM = 0.252;
     }
     
     //TODO: add invalid scoring matrix error handling
@@ -72,6 +70,9 @@ public class BLASTP extends BLAST
                 }
             }
         }
+        //create Alignment objects
+        
+        
 		int[] retval = new int[foundSeeds.size()];
 		
 		for(int i = 0; i < retval.length; i++)
@@ -79,27 +80,31 @@ public class BLASTP extends BLAST
 		return retval;
     }
     
-    protected Alignment[] doGapped(AlignRange[] range, Sequence query, Sequence subject)
+  /*  protected Alignment[] doGapped(AlignRange[] range, Sequence query, Sequence subject)
     {
     	SequencePair[] ungapped = new SequencePair[range.length];
-        
+    	
         for(int i = 0; i < ungapped.length; i++)
         {
-        	ungapped[i] = new SequencePair(new ProteinSequence(query.description(),query.elementsToString().substring(range[i].qStart, range[i].qEnd)),
-        								   new ProteinSequence(subject.description(),subject.elementsToString().substring(range[i].sStart, range[i].sEnd)));
+        	//System.out.println("qrange "+ (range[i].qStart-1) + "," + range[i].qEnd + "srange "+ (range[i].sStart-1) + "," + range[i].sEnd);
+        	ungapped[i] = new SequencePair(new ProteinSequence(query.description(),query.elementsToString().substring(range[i].qStart-1, range[i].qEnd)),
+        								   new ProteinSequence(subject.description(),subject.elementsToString().substring(range[i].sStart-1, range[i].sEnd)));
         }
     	
+        
         Alignment[] results = new Alignment[ungapped.length];
     	ProteinLocalAlignmentSeq aligner = new ProteinLocalAlignmentSeq();
     	//aligner stuff
     	
     	for(int i = 0; i < ungapped.length; i++)
         {
+        	//System.out.println(ungapped[i].query.elementsToString());
+        	//System.out.println(ungapped[i].subject.elementsToString());
     		aligner.setQuerySequence((ProteinSequence) ungapped[i].query, (long)i);
     		aligner.setSubjectSequence((ProteinSequence) ungapped[i].subject, (long)i);
-            results[i] = aligner.align();    		
+            results[i] = aligner.align();
         }
     	
     	return results;
-    }
+    }*/
 }

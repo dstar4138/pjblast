@@ -1,7 +1,9 @@
-import edu.rit.compbio.seq.Sequence;
-import edu.rit.compbio.seq.Alignment;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import modpj.Alignment;
+import modpj.Sequence;
 
 abstract public class BLAST
 {
@@ -15,11 +17,9 @@ abstract public class BLAST
     //returns the score for any two letter pairs
     protected abstract int getScore(byte a, byte b);
     
-    //creates the list of words to be used in the initial ungapped alignment
+    //creates the list of words to be used in the seeding
     protected abstract int[] findSeeds(byte[] str);
-    
-    protected abstract Alignment[] doGapped(AlignRange[] range, Sequence query, Sequence subject);
-    
+       
     public Alignment[] align(Sequence querySeq, Sequence subjectSeq)
     {
     	queryDesc = querySeq.description();
@@ -29,9 +29,9 @@ abstract public class BLAST
         //seeds is an array of indexes into the query representing the words
         int[] seeds = findSeeds(query);
         ArrayList<HSP> hits = new ArrayList<HSP>();
-		ArrayList<AlignRange> alignments = new ArrayList<AlignRange>();
+		ArrayList<Alignment> alignments = new ArrayList<Alignment>();
         int alignscore = 0;
-        double eScore;
+        //double eScore;
         int startRange, endRange, queryIndex, subjectIndex;
         
         //1: find all exact matches between a word and some position in the subject
@@ -50,11 +50,6 @@ abstract public class BLAST
 			pos = 1;
         }
         
-        //Exact match positions
-        for(int i = 0; i < hits.size(); i++)
-        {
-        	System.out.println(hits.get(i).qPos + "," + hits.get(i).sPos);
-        }
         //2: extend the match forwards and backwards until the score decreases too much
         for(int i = 0; i < hits.size(); i++)
         {
@@ -102,23 +97,30 @@ abstract public class BLAST
                 queryIndex--;
                 subjectIndex--;
             }
+            
+            //add check for identical ranges
 			
-			//3: keep only the extended alignments that pass cutoff            
-            //debug statements
-            System.out.println("qrange " + (temp.qPos - startRange) + "," + (temp.qPos + (wordLength-1) + endRange));
-            System.out.println("srange " + (temp.sPos - startRange) + "," + (temp.sPos + (wordLength-1) + endRange));
-           
-            //-1 to length to account for unused 0 position
-            eScore = findEScore(currScore, query.length - 1, subject.length - 1);
-            //if(eScore >= eCutoff)
-                //E score, query start, query end, subject start, subject end
-                alignments.add(new AlignRange(eScore, temp.qPos - startRange,temp.qPos + (wordLength-1) + endRange,temp.sPos - startRange,temp.sPos + (wordLength-1) + endRange));
+			//3: keep only the extended alignments that pass cutoff 
+            System.out.println(findEScore(currScore,querySeq.length(),subjectSeq.length()));
+            if(findEScore(currScore,querySeq.length(),subjectSeq.length()) <= eCutoff)
+            {
+                Alignment alignment = new Alignment();
+                alignment.setMyQueryId(0L);
+            	alignment.setMySubjectId(0L);
+            	alignment.setMyQueryLength(querySeq.length());
+            	alignment.setMySubjectLength(subjectSeq.length());
+            	alignment.setMyQueryStart(temp.qPos - startRange);
+            	alignment.setMyQueryFinish(temp.qPos + (wordLength-1) + endRange);
+            	alignment.setMySubjectStart(temp.sPos - startRange);
+            	alignment.setMySubjectFinish(temp.sPos + (wordLength-1) + endRange);
+            	alignment.setMyScore(currScore);
+            	alignment.setMyTraceback(new byte[alignment.getQueryFinish() - alignment.getQueryStart()]);
+            	Arrays.fill(alignment.getMyTraceback(), (byte) Alignment.QUERY_ALIGNED_WITH_SUBJECT);    
+                alignments.add(alignment);
+            }
         }
-        
-        //AlignRange[] temp = alignments.toArray(temp);
-        Alignment[] results = doGapped((AlignRange[]) alignments.toArray(new AlignRange[0]),querySeq,subjectSeq);
     
-        return results;
+        return alignments.toArray(new Alignment[0]);
     }
     
     private double findEScore(int score, int qLen, int sLen)
@@ -128,7 +130,7 @@ abstract public class BLAST
         return 1 - Math.pow(Math.E,-y);
     }
     
-    //naive search for now
+    //naive search for now, could be improved with a DFA or some type of hash based search
     private int indexOf(byte[] str, byte[] pat, int start)
     {
     	int found = -1;

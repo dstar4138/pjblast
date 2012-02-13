@@ -4,15 +4,9 @@
  * take exponential time. 
  **/
 
-import edu.rit.compbio.seq.Alignment;
-import edu.rit.compbio.seq.AlignmentPrinter;
-import edu.rit.compbio.seq.DefaultAlignmentStats;
-import edu.rit.compbio.seq.ProteinDatabase; // Reads in FASTA style databases.
-import edu.rit.compbio.seq.ProteinSequence;
-import edu.rit.compbio.seq.Sequence;
 import edu.rit.pj.Comm;
-
 import java.io.File;
+import modpj.*;
 
 public class BlastRunnerSeq {
 

@@ -5,13 +5,6 @@
  * handle long sub word searches within the database entry itself.
  **/
 
-import edu.rit.compbio.seq.Alignment;
-import edu.rit.compbio.seq.AlignmentPrinter;
-import edu.rit.compbio.seq.DefaultAlignmentStats;
-import edu.rit.compbio.seq.ProteinDatabase;
-import edu.rit.compbio.seq.ProteinSequence;
-import edu.rit.compbio.seq.Sequence;
-
 import edu.rit.pj.Comm;
 import edu.rit.pj.WorkerTeam;
 import edu.rit.pj.WorkerRegion;
@@ -20,6 +13,9 @@ import edu.rit.mp.buf.ObjectItemBuf;
 
 import java.io.File;
 import java.util.Hashtable;
+
+import modpj.*;
+
 
 public class BlastRunnerPar {
 

@@ -1,7 +1,8 @@
-import edu.rit.compbio.seq.ProteinSequence;
-import edu.rit.compbio.seq.Alignment;
-import edu.rit.compbio.seq.AlignmentPrinter;
-import edu.rit.compbio.seq.DefaultAlignmentStats;
+import modpj.Alignment;
+import modpj.AlignmentPrinter;
+import modpj.DefaultAlignmentStats;
+import modpj.ProteinSequence;
+
 
 public class ModuleTest extends BLASTP
 {
@@ -28,7 +29,7 @@ public class ModuleTest extends BLASTP
             case 2:
             	q = new ProteinSequence(">Query",args[1]);
             	s = new ProteinSequence(">Subject",args[2]);
-                Alignment[] results = aligner.align(q,s);
+            	Alignment[] results = aligner.align(q ,s);
                 AlignmentPrinter out = new AlignmentPrinter(System.out,new DefaultAlignmentStats(s.length()));
                 for(int i = 0; i < results.length; i++)
                 {
@@ -43,6 +44,17 @@ public class ModuleTest extends BLASTP
                     score += aligner.getScore(args[1].charAt(i),args[2].charAt(i));
                 }
                 System.out.println("Total " + score);*/
+            	break;
+            case 4:
+            	/*q = new ProteinSequence(">Query",args[1]);
+            	s = new ProteinSequence(">Subject",args[2]);
+            	ProteinLocalAlignmentSeq test = new ProteinLocalAlignmentSeq();
+                test.setQuerySequence(q,1L);
+                test.setSubjectSequence(s,1L);
+                Alignment output = test.align();
+                AlignmentPrinter out1 = new AlignmentPrinter(System.out,new DefaultAlignmentStats(s.length()));
+                out1.printDetails(output, q, s);*/
+            	break;
         }
         
     }
