@@ -1,7 +1,6 @@
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import modpj.Alignment;
 import modpj.Sequence;
 
@@ -39,13 +38,13 @@ abstract public class BLAST
         int pos = 1;
         for(int i = 0; i < seeds.length; i++)
         {
-        	pos = indexOf(subject,Arrays.copyOfRange(query,seeds[i],seeds[i] + wordLength),pos);
+        	pos = indexOf(subject,getRange(query,seeds[i],seeds[i] + wordLength),pos);
         	
             while(pos != -1)
             {
                 //HSP(word's position in query, word's position in subject)
                 hits.add(new HSP(seeds[i],pos));
-                pos = indexOf(subject,Arrays.copyOfRange(query,seeds[i],seeds[i] + wordLength),pos+1);
+                pos = indexOf(subject,getRange(query,seeds[i],seeds[i] + wordLength),pos+1);
             }
 			pos = 1;
         }
@@ -145,7 +144,12 @@ abstract public class BLAST
     	}
     	return found;
     }
-                             
+    
+    private byte[] getRange( byte[] array, int from, int to){
+    	byte[] newarray = new byte[ (to - from)];
+    	for(int i=from,j=0; i<to; i++,j++) newarray[j]=array[i];
+    	return newarray;
+    }                        
 }
 		
 		
