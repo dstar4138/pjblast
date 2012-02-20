@@ -1,8 +1,11 @@
 /**
- * Parallel Version of BLAST.
- * Runs a search over a database list in parallel, searching each one on a separate process and reporting 
- * back the alignment ranges are. Also the parallel BLAST function makes use of a multicore environment to 
- * handle long sub word searches within the database entry itself.
+ * Parallel Version of BLAST - 
+ * Runs a search over a database list in parallel, searching each one on a 
+ * separate process and reporting back the alignment ranges are. Also the 
+ * parallel BLAST function makes use of a multicore environment to handle long 
+ * sub word searches within the database entry itself.
+ * 
+ * @author Alexander Dean
  **/
 
 import edu.rit.pj.Comm;
@@ -12,21 +15,18 @@ import edu.rit.pj.WorkerLongForLoop;
 
 import java.io.File;
 
-import modpj.*;
+import pjbio.*;
 
 
 public class BlastRunnerPar {
 
-	static ProteinDatabase pd;
+    static ProteinDatabase pd;
 	
     public static void main( String[] args ) throws Exception{
         Comm.init(args);
-        //final Comm world = Comm.world();
-        //final int rank = world.rank();
-        //final int size = world.size();
          
         if( args.length != 5 ){ usage(); }
-        // TODO: ProteinDatabase wont necessarily work if the user passes in a nucleotide file in.
+
         pd = new ProteinDatabase( new File( args[1] ) , new File(args[2]) );
         final float percentage = (new Float(args[3])).floatValue();
         
@@ -34,10 +34,10 @@ public class BlastRunnerPar {
         final BLAST aligner;
         if(args[0].toLowerCase().startsWith("p")){
             query = new ProteinSequence(">Search Query", args[4]);
-            aligner = new BLASTP();
+            aligner = new BLASTP(pd.getProteinCount());
         }else{
             query = new NucleotideSequence(">Search Query", args[4]);
-            aligner = new BLASTN();
+            aligner = new BLASTN(pd.getProteinCount());
         }
         
         long t1 = System.currentTimeMillis();
@@ -73,10 +73,10 @@ public class BlastRunnerPar {
     private static void usage(){
         System.out.println( "Usage: java BlastRunnerSeq [p/n] <input database> <index file> <search coverage percentage> <query seqence>\n"+
                             "\t[p/n] - p if proteins, n if nucleotides.\n"+
-                            "\t<input database> - Path to a file with FASTA syle sequences.\n" +
+                            "\t<input database> - Path to a file with FASTA style sequences.\n" +
                             "\t<database indexs> - Path to index file for input database.\n"+
                             "\t<search coverage percentage> - A number 0.0-1.0, represents how much of the database to search\n"+
-                            "\t<query seqence> - The seqence to search for in the input db.");
+                            "\t<query seqence> - The sequence to search for in the input db.");
         System.exit(1);
     }
 }

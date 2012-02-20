@@ -1,47 +1,74 @@
+/**
+ * Class BLASTP implements protein sequence alignments. It provides the protein-specific
+ * word generation and scoring functions used by class BLAST.
+ * 
+ * @author Sean McGroty
+ */
+
 import java.util.ArrayList;
-
-import modpj.Blosum62;
-
+import pjbio.Blosum62;
 
 public class BLASTP extends BLAST
 {    
     private int[][] scoringMatrix;
-    
     private int wordCutoff;
     
-    public BLASTP()
+    /**
+     * The default constructor sets parameters for use with the BLOSUM62 matrix
+     * @param dbLength the total number of amino acids in the database
+     */
+    public BLASTP(long dbLength)
     {
         //these are based on NCBI's defaults
         this.wordLength = 3;
         this.wordCutoff = 13;
         this.scoreCutoff = 23;
-        this.gapOpenPenalty = 11;
-        this.gapExtensionPenalty = 1;
         this.scoringMatrix = Blosum62.matrix;
         this.eCutoff = 10;
-        this.K = 0.035;
-        this.LAM = 0.252;
+        this.K = 0.134;	//values obtained from BLAST, page 66
+        this.LAM = 0.318;
+        this.dbLength = dbLength;
     }
     
-    //TODO: add invalid scoring matrix error handling
-    public BLASTP(int wordLength, int wordCutoff, int scoreCutoff,int gapOpen, int gapExtend, double eCut, int[][] userScoringMatrix)
+    /**
+     * Constructor for using a user-provided scoring matrix. All parameters must be customized for that matrix
+     * since the use of another scoring matrix strongly implies differing statistical measures for scoring and analysis
+     * 
+     * @param wordLength
+     * @param wordCutoff
+     * @param scoreCutoff
+     * @param eCut
+     * @param userScoringMatrix
+     */
+    public BLASTP(int wordLength, int wordCutoff, int scoreCutoff, double eCut, int[][] userScoringMatrix)
     {
         this.wordLength = wordLength;
         this.scoreCutoff = scoreCutoff;
-        this.gapOpenPenalty = gapOpen;
-        this.gapExtensionPenalty = gapExtend;
         this.scoringMatrix = userScoringMatrix;
         this.wordCutoff = wordCutoff;
         this.eCutoff = eCut;
     }
     
+    /**
+     * getScore applies the scoring matrix to the two amino acids represented
+     * by a and b
+     * 
+     * @param a first amino acid
+     * @param b second amino acid
+     * @return the score from the matrix
+     */
     protected int getScore(byte a, byte b)
     {
         return scoringMatrix[a][b];
     }
     
-    //self-scans the query for high-scoring words
-    //NOTE: this is currently not a very efficient way of doing this and is O(n^2*wordLength)
+    /**
+     * Finds high scoring words by scanning each word along the query
+     * and returning only ones that yield a pairwise score above a cutoff
+     * 
+     * @param query the query 
+     * @return an integer array of indexes into the query representing high scoring words
+     */
     protected int[] findSeeds(byte[] query)
     {
         ArrayList<Integer> foundSeeds = new ArrayList<Integer>();
@@ -70,41 +97,11 @@ public class BLASTP extends BLAST
                 }
             }
         }
-        //create Alignment objects
-        
-        
+      
 		int[] retval = new int[foundSeeds.size()];
 		
 		for(int i = 0; i < retval.length; i++)
 			retval[i] = foundSeeds.get(i).intValue();
 		return retval;
-    }
-    
-  /*  protected Alignment[] doGapped(AlignRange[] range, Sequence query, Sequence subject)
-    {
-    	SequencePair[] ungapped = new SequencePair[range.length];
-    	
-        for(int i = 0; i < ungapped.length; i++)
-        {
-        	//System.out.println("qrange "+ (range[i].qStart-1) + "," + range[i].qEnd + "srange "+ (range[i].sStart-1) + "," + range[i].sEnd);
-        	ungapped[i] = new SequencePair(new ProteinSequence(query.description(),query.elementsToString().substring(range[i].qStart-1, range[i].qEnd)),
-        								   new ProteinSequence(subject.description(),subject.elementsToString().substring(range[i].sStart-1, range[i].sEnd)));
-        }
-    	
-        
-        Alignment[] results = new Alignment[ungapped.length];
-    	ProteinLocalAlignmentSeq aligner = new ProteinLocalAlignmentSeq();
-    	//aligner stuff
-    	
-    	for(int i = 0; i < ungapped.length; i++)
-        {
-        	//System.out.println(ungapped[i].query.elementsToString());
-        	//System.out.println(ungapped[i].subject.elementsToString());
-    		aligner.setQuerySequence((ProteinSequence) ungapped[i].query, (long)i);
-    		aligner.setSubjectSequence((ProteinSequence) ungapped[i].subject, (long)i);
-            results[i] = aligner.align();
-        }
-    	
-    	return results;
-    }*/
+    }   
 }

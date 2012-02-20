@@ -1,12 +1,13 @@
 /**
- * Sequential Version of BLAST.
- * Only run on smaller databases of sequences, as the sequential version could theoretically 
- * take exponential time. 
+ * Sequential Version of BLAST - 
+ *
+ * @author Alexander Dean
  **/
 
 import edu.rit.pj.Comm;
 import java.io.File;
-import modpj.*;
+
+import pjbio.*;
 
 public class BlastRunnerSeq {
 
@@ -23,10 +24,10 @@ public class BlastRunnerSeq {
         BLAST aligner;
         if(args[0].toLowerCase().startsWith("p")){
             query = new ProteinSequence(">Search Query", args[4]);
-            aligner = new BLASTP();
+            aligner = new BLASTP(pd.getProteinCount());
         }else{
             query = new NucleotideSequence(">Search Query", args[4]);
-            aligner = new BLASTN();
+            aligner = new BLASTN(pd.getProteinCount());
         }
         
         long t1 = System.currentTimeMillis();
@@ -47,9 +48,9 @@ public class BlastRunnerSeq {
         System.out.println( "Usage: java BlastRunnerSeq [p/n] <input database> <index file> <search coverage percentage> <query seqence>\n"+
                             "\t[p/n] - p if proteins, n if nucleotides.\n"+
                             "\t<database indexs> - Path to index file for input database.\n"+
-                            "\t<input database> - Path to a file with FASTA syle sequences.\n" +
+                            "\t<input database> - Path to a file with FASTA style sequences.\n" +
                             "\t<search coverage percentage> - A number 0.0-1.0, represents how much of the database to search\n"+
-                            "\t<query seqence> - The seqence to search for in the input db.");
+                            "\t<query seqence> - The sequence to search for in the input db.");
         System.exit(1);
     }
 

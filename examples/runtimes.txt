@@ -1,0 +1,15 @@
+43 0 103429
+43 1 103659
+43 2 56549
+43 4 31249
+43 8 17531
+43 16 10995
+43 32 6326
+n 43 53000 "N = 53K"
+eff yAxisStart 0.5
+eff xAxisEnd 45
+edsf yAxisStart 0.02
+edsf xAxisEnd 45
+speedup yAxisEnd 18
+speedup xAxisEnd 45
+#time yAxisEnd 2

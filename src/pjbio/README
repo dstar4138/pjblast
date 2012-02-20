@@ -1,0 +1,4 @@
+This package contains the Parallel Java library's compbio files.
+Alignment.java was modified to support public getters and setters to allow the BLAST
+class to create the alignment info. The rest of the files are included for a uniform
+class structure.
